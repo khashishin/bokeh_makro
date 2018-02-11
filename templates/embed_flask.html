@@ -1,0 +1,28 @@
+<html>
+<head>
+    <title>Website</title>
+	{{ css_resources | safe }}
+<style>
+@import url(http://fonts.googleapis.com/css?family=Amatic+SC:700);
+body{
+    text-align: center;
+}
+h1{
+    font-family: 'Amatic SC', cursive;
+    font-weight: normal;
+    color: #8ac640;
+    font-size: 2.5em;
+}
+</style>
+
+</head>
+<body>
+    <script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.js"></script>
+    <script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.14.min.js"></script>
+ <p>Flask embedding Bokeh test</p>
+{{js_resources   | safe}}
+{{ name | safe }}
+{{ script | safe}}
+
+</body>
+</html>
