@@ -7,22 +7,40 @@
 body{
     text-align: center;
 }
-h1{
-    font-family: 'Amatic SC', cursive;
-    font-weight: normal;
-    color: #8ac640;
-    font-size: 2.5em;
+div.bk-root{
+	height: 600;
 }
-</style>
 
+</style>
 </head>
 <body>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: {
+     equationNumbers: {  autoNumber: "AMS"  },
+     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js", "color.js"]
+  }
+});
+</script>
+
+<!-- MATH EXPRESSION LIBRARIES -->
+<script type="text/javascript"
+ src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
     <script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.js"></script>
     <script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.14.min.js"></script>
- <p>Flask embedding Bokeh test</p>
+ <p><h1>Wizualizacja wykresów</h1></p>
 {{js_resources   | safe}}
 {{ name | safe }}
+
 {{ script | safe}}
+
+<div id="equations">
+Test równania dynamicznego: <div id = "dynamic_equation"> </div>
+<br> <br>
+Test równania statycznego: {{static_math_expression}}
+</div>
 
 </body>
 </html>
