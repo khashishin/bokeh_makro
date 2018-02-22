@@ -11,7 +11,7 @@ import numpy as np
 
 from bokeh.io import curdoc
 from bokeh.layouts import row, widgetbox
-from bokeh.models import ColumnDataSource
+from bokeh.models import ColumnDataSource,  Span
 from bokeh.models.widgets import Slider, TextInput, InputWidget
 from bokeh.plotting import figure
 import math
@@ -35,6 +35,8 @@ plot = figure(plot_height=800, plot_width=600, title="",
 #LEGENDA
 plot.line("x","y", source=source, legend="IS", line_width=3, line_color="Green", line_alpha=0.6)
 plot.line("x","y", source=source2, legend="LM", line_width=3, line_color="Red", line_alpha=0.6)
+plot.renderers.extend([Span(location=0, dimension='height', line_color='black', line_width=1), Span(location=0, dimension='width', line_color='black', line_width=1)])
+
 
 # Widgety - interackcja
 #Bokeh nie ma float input - mozliwe bledy bez castowania

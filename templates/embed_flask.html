@@ -18,7 +18,8 @@ div.bk-root{
 MathJax.Hub.Config({
   TeX: {
      equationNumbers: {  autoNumber: "AMS"  },
-     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js", "color.js"]
+     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js", "color.js"],
+     inlineMath: [['$$','$$'], ['\\(','\\)']]
   }
 });
 </script>
@@ -37,9 +38,14 @@ MathJax.Hub.Config({
 {{ script | safe}}
 
 <div id="equations">
-\( \frac {\delta x} {delta y} \): <div id = "dynamic_equation"> </div>
+$$ \frac {\delta x} {\delta y}: $$ <div id = "dynamic_equation"> </div>
 <br> <br>
-Test równania statycznego: {{static_math_expression}}
+Test równania statycznego podanego z Pythona: {{static_math_expression}}
+</div>
+
+<div>
+  Rownanie statyczne wpisane "na sztywno w JS": \(C =\bar{C} + cY_d = \bar{C} + c(Y-T), \space \frac{\delta C}{\delta Y_d}\) 
+
 </div>
 
 </body>

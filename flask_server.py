@@ -3,7 +3,7 @@ from flask import Flask, render_template
 
 from bokeh.embed import server_document
 from bokeh.layouts import column, row, widgetbox
-from bokeh.models import ColumnDataSource, Slider,  TextInput, CustomJS
+from bokeh.models import ColumnDataSource, Slider, TextInput, CustomJS, Span
 from bokeh.client import pull_session
 from bokeh.embed import server_session
 from bokeh.plotting import figure
@@ -38,9 +38,11 @@ def create_visualization(doc):
                    x_axis_label='IS', y_axis_label='LM')
     #https://bokeh.pydata.org/en/latest/docs/user_guide/quickstart.html
 
-    #LEGENDA
+    #Wykresy danych
     plot.line("x","y", source=source, legend="IS", line_width=3, line_color="Green", line_alpha=0.6)
     plot.line("x","y", source=source2, legend="LM", line_width=3, line_color="Red", line_alpha=0.6)
+    #Os wspolrzednych
+    plot.renderers.extend([Span(location=0, dimension='height', line_color='black', line_width=1), Span(location=0, dimension='width', line_color='black', line_width=1)])
 
     # Widgety - interackcja
     #Bokeh nie ma float input - mozliwe bledy bez castowania
@@ -102,14 +104,11 @@ def create_equation():
     equation_text = "\({}\)".format(equation)
     return equation_text
 
-def change_visuals_for_page(session):
-    #Ten element można wykorzystać do dodawnia elementów do strony - nie wiem czy są inne selektory niż children.
-    session.document.roots[0].children[1].title.text = "Przykład dodania elementu do generowanej sesji strony"
-    return session
-
-def calculate_value(val1,val2,val3,val4):
-    val = val1+val2+val3+val4
-    return round(val,2)
+#UZYWANE PRZY PULL SESSION - NIEWYKORZYSTANE ZE WZGLEDU NA BLAD BOKEHA
+# def change_visuals_for_page(session):
+#     #Ten element można wykorzystać do dodawnia elementów do strony - nie wiem czy są inne selektory niż children.
+#     session.document.roots[0].children[1].title.text = "Przykład dodania elementu do generowanej sesji strony"
+#     return session
 
 main_server_port = 8000
 bokeh_plot_server_1_port = "5006"
@@ -121,31 +120,32 @@ application_link = "/bkapp"
 
 #To jest aplikacja kliencka Bokeha ktora laczy sie z serwerem w bk_server_worker
 def bkapp_page(name):
-    session = pull_session(url='http://localhost:{}{}'.format(bokeh_plot_server_1_port,application_link))
-    session = change_visuals_for_page(session)
-    session.push()
-    script = server_session(None, session.id, url='http://localhost:{}{}'.format(bokeh_plot_server_1_port,application_link))
+    #Startujemy serwer i odpowiednie wątki, tak żeby odświeżać nasz dokument
+    from threading import Thread
+    server_thread = Thread(target=bk_server_worker)
+    server_thread.start()
+    script = server_document('http://localhost:{}{}'.format(bokeh_plot_server_1_port,application_link))
+
+    #PODEJSCIE Z PULL SESSION NIE DZIALA - WYRKES JES NIEINTERAKTYWNY
+    # session = pull_session(url='http://localhost:{}{}'.format(bokeh_plot_server_1_port,application_link))
+    # session = change_visuals_for_page(session)
+    # session.push()
+    # script = server_session(None, session.id, url='http://localhost:{}{}'.format(bokeh_plot_server_1_port,application_link))
+
     return render_template("embed_flask.html", name=name, script=script, js_resources=js_resources, css_resources=css_resources, template="Flask", 
         static_math_expression = create_equation())
 
-    #Startujemy serwer i odpowiednie wątki, tak żeby odświeżać nasz dokument
 def bk_server_worker():
     server = Server({application_link: create_visualization}, allow_websocket_origin=["127.0.0.1:{}".format(main_server_port), "localhost:{}".format(main_server_port)]) 
     # UWAGA - Tylko 1 origin (1 watek) moze miec dostep do aktualizujacego sie wykresu, wiec proba dodania np. 5006 do listy i dostania sie przez niego skutkuje nieinteraktywnym wykresem
     #LOKALNY 5006 ["127.0.0.1:{}".format(bokeh_plot_server_1_port), "localhost:{}".format(bokeh_plot_server_1_port)]
     #Na serwerze 8000 ["127.0.0.1:{}".format(main_server_port), "localhost:{}".format(main_server_port)]
     server.start()
-    try:
-        server.io_loop.start()
-    except KeyboardInterrupt:
-        server.io_loop.stop()
+    server.io_loop.start()
+
 
 if __name__ == '__main__':
     print ("Running bokeh server...")
-    from threading import Thread
-    server_thread = Thread(target=bk_server_worker)
-    server_thread.start()
-
     print ("Openning application on http://localhost:{}{}".format(bokeh_plot_server_1_port,application_link))
     print ("Openning server on http://localhost:{}".format(main_server_port))
     app.run(port=main_server_port, debug=False)
