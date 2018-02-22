@@ -29,14 +29,21 @@ def create_visualization(doc):
     x = np.linspace(0, my_range, N)
     y = [math.pow(i, 1) for i in x]
     y2 = [my_range - math.pow(j,1) for j in x]
+    y3 = [-el for el in y2]
     source = ColumnDataSource(data=dict(x=x, y=y))
     source2 = ColumnDataSource(data=dict(x=x, y=y2))
+    source_plot2 = ColumnDataSource(data=dict(x=x, y=y3))
 
     # Tworzenie wykresu - sam wykres jest nieinteraktywny
     plot = figure(plot_height=800, plot_width=600, title="",
                   x_range=[0, my_range], y_range=[0, my_range], tools="pan,wheel_zoom", active_scroll="wheel_zoom", toolbar_location="below",
                    x_axis_label='IS', y_axis_label='LM')
     #https://bokeh.pydata.org/en/latest/docs/user_guide/quickstart.html
+
+    plot2 = figure(plot_height=800, plot_width=600, title="",
+                  x_range=[0, my_range], y_range=[0, my_range], tools="pan,wheel_zoom", active_scroll="wheel_zoom", toolbar_location="below",
+                   x_axis_label='IS', y_axis_label='LM')
+    plot2.line("x","y", source=source_plot2, legend="test", line_width=3, line_color="Blue", line_alpha=0.6)
 
     #Wykresy danych
     plot.line("x","y", source=source, legend="IS", line_width=3, line_color="Green", line_alpha=0.6)
@@ -71,8 +78,10 @@ def create_visualization(doc):
         x = np.linspace(0, my_range, N)
         y = [math.pow(wartosc_value*i, potega_value) for i in x]
         y2 = [my_range - math.pow(wartosc2_value*j,potega2_value) for j in x]
+        y3 = [-el+my_range for el in y2]
+        source_plot2.data = dict(x=x, y=y2)
         source.data = dict(x=x, y=y)
-        source2.data = dict(x=x, y=y2)
+        source2.data = dict(x=x, y=y3)
 
         #Próba zmiany DIV na stronie
         # session = pull_session(url='http://localhost:{}{}'.format(bokeh_plot_server_1_port,application_link))
@@ -92,7 +101,7 @@ def create_visualization(doc):
 
     # Grupowanie widgetów i layout
     widgets = widgetbox(potega, wartosc, potega2, wartosc2)
-    layout = row(widgets, plot, width=400, height = 400 )
+    layout = row(widgets, plot, plot2, width=400, height = 400 )
 
     #Finalne tworzenie dokumentu, który może zostać serwowany w serwerze
     doc.add_root(layout)
