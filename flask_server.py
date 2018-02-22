@@ -80,15 +80,15 @@ def create_visualization(doc):
         # div.value = "TEST"
 
     #TODO based on https://bokeh.pydata.org/en/latest/docs/user_guide/interaction/callbacks.html#customjs-for-user-interaction-events
-    # js_code = """
-    # doc = document.getElementById("dynamic_equation");
-    # doc.textContent = potega.value;
-    # """
-
+    js_code = """
+    doc = document.getElementById("dynamic_equation");
+    doc.innerHTML = "$$ /frac{"+potega.value+"}{3} $$";
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub,doc]);
+    """.replace("/","&#92")
     for w in [potega, wartosc, potega2, wartosc2]:
         w.on_change('value', update_data)
         #Nie można tu wykorzystać texa ani nic podobnego, wszystkie dynamiczne rzeczy muszą odbywać się w kodzie JS w js_code.
-        # w.js_on_change('value', CustomJS(args=dict(potega=potega, wartosc=wartosc, potega2=potega2, wartosc2=wartosc2),code=js_code))
+        w.js_on_change('value', CustomJS(args=dict(potega=potega, wartosc=wartosc, potega2=potega2, wartosc2=wartosc2),code=js_code))
 
     # Grupowanie widgetów i layout
     widgets = widgetbox(potega, wartosc, potega2, wartosc2)
