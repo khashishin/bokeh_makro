@@ -39,7 +39,9 @@ static_is_div_test = """
         <br>
         Y = {c_const} + {c_y} (Y - {tax_value}Y) + {i_const} - {i_i} i + {g_value} - {tax_constant}
         <br>
-        Y = 
+        Y = \\frac {{ 1}} {{1 - b }} (a + \\bar{{I}}) - di
+        <br>
+        Y = \\frac {{ 1}} {{1 - {c_y} * (1 - {tax_value}) }}  * ({c_const}+{i_const}+{g_value}-{tax_constant} - {i_i} i )  
         """
 
 static_lm_div_test = """ 
@@ -49,7 +51,7 @@ static_lm_div_test = """
         <br>
         M_d = {money_constant} + {prod_money_coeff} Y  - {i_prod_money_coeff} i
         <br>
-        M_s = {money_supply}
+        M_s = \\frac{{M}}{{P}}= {money_supply}
         <br>
         i =  \\frac {{ {prod_money_coeff} Y + {money_constant} - {money_supply} }} {{ {i_prod_money_coeff} }}
         <br>
@@ -86,7 +88,6 @@ def create_visualization(doc):
     i_prod_money_coeff = 25
     money_supply = 200
 
-    # Set up data
     #Definicja źródła danych, które generujemy numerycznie
     x, y = generate_x_and_y_islm(c_y_value, c_const_value, i_i_value, i_const_value, g_value, tax_value, tax_constant)
     source = ColumnDataSource(data=dict(x=x, y=y))
@@ -115,26 +116,18 @@ def create_visualization(doc):
     plot3.line("x","y", source=source, legend="IS", line_width=3, line_color="Green", line_alpha=0.6)
     plot3.line("x","y", source=source2, legend="LM", line_width=3, line_color="Red", line_alpha=0.6)
 
-    #Os wspolrzednych
-    plot.renderers.extend([Span(location=0, dimension='height', line_color='black', line_width=1), Span(location=0, dimension='width', line_color='black', line_width=1)])
-    plot2.renderers.extend([Span(location=0, dimension='height', line_color='black', line_width=1), Span(location=0, dimension='width', line_color='black', line_width=1)])
-    plot3.renderers.extend([Span(location=0, dimension='height', line_color='black', line_width=1), Span(location=0, dimension='width', line_color='black', line_width=1)])   
+    #Os wspolrzednych i tooltip na mouse hover
+    tooltips = [("(x,y)", "($x,$y)")]
+    hover = HoverTool(tooltips=tooltips, mode='vline')
+    #INTERAKCJA - hover
+    #https://bokeh.pydata.org/en/latest/docs/user_guide/tools.html#basic-tooltips
+    for plotobj in [plot, plot2, plot3]:
+        plotobj.renderers.extend([Span(location=0, dimension='height', line_color='black', line_width=1), Span(location=0, dimension='width', line_color='black', line_width=1)])
+        plotobj.add_tools(hover) 
 
     #Dodatkowy test
     # sometext = Title(text=create_equation(), align="center")
     # plot.add_layout(sometext, "below")
-
-    #INTERAKCJA - hover
-    #https://bokeh.pydata.org/en/latest/docs/user_guide/tools.html#basic-tooltips
-    tooltips = [("(x,y)", "($x,$y)")]
-    islm_tooltips = [("(x,y)", "($x,$y)")
-    # ,("punkt rownowagi", "1245")
-    ]
-    islm_hover =  HoverTool(tooltips=islm_tooltips, mode='vline')
-    hover = HoverTool(tooltips=tooltips, mode='vline')
-    plot.add_tools(hover) 
-    plot2.add_tools(hover)
-    plot3.add_tools(islm_hover)
 
     # Widgety - interackcja
     #Bokeh nie ma float input - mozliwe bledy bez castowania
@@ -209,15 +202,14 @@ def create_visualization(doc):
     # Grupowanie widgetów i layout
     widgets = widgetbox(c_y_input, c_const_input, i_const_input, i_i_input, g_input, tax_input, taxcon_input, width=150)
     widgets2 = widgetbox(prod_money_coeff_input, money_constant_input, i_prod_money_coeff_input, money_supply_input, width=150)
-    # layout = row(widgets, plot, plot2, width=400, height = 400)
     complex_layout = layout([
-      # [widgets, plot, plot2],
       [widgets, plot],
       [div],
       [widgets2, plot2],
       [div2],
       [plot3]
     ], sizing_mode='fixed')
+
     #Finalne tworzenie dokumentu, który może zostać serwowany w serwerze
     doc.add_root(complex_layout)
     doc.title = "Model IS-LM"
@@ -262,5 +254,4 @@ if __name__ == '__main__':
     print ("Running bokeh server...")
     # print ("Openning bokeh worker server application on http://localhost:{}{}".format(bokeh_plot_server_1_port,application_link))
     print ("Openning single process Flask app with embedded Bokeh application on http://localhost:{}".format(main_server_port))
-
     app.run(port=main_server_port, debug=False)
