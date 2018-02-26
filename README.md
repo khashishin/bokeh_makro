@@ -1,7 +1,8 @@
 # bokeh_makro
 
 Model showcasing IS-LM model Equilibrium in its' linear version or IS and LM curves.
-Build upon 
+Built upon Bokeh + MathJax + Python + Flask.
+Linear Algebra courtesy of: http://www.economicsdiscussion.net/is-lm-curve-model/algebraic-analysis-of-is-lm-model-with-numerical-problems/10609  
 
 ![Image of IS model](images/IS.png)
 
