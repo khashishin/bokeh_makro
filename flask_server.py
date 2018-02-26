@@ -38,6 +38,8 @@ static_is_div_test = """
         I = {i_const} - {i_i} i
         <br>
         Y = {c_const} + {c_y} (Y - {tax_value}Y) + {i_const} - {i_i} i + {g_value} - {tax_constant}
+        <br>
+        Y = 
         """
 
 static_lm_div_test = """ 
@@ -45,46 +47,50 @@ static_lm_div_test = """
         <br>
         M_d = M_s
         <br>
-        M_d = {money_coeff} Y + {money_constant} - {i_money_coeff} i
+        M_d = {money_constant} + {prod_money_coeff} Y  - {i_prod_money_coeff} i
         <br>
         M_s = {money_supply}
+        <br>
+        i =  \\frac {{ {prod_money_coeff} Y + {money_constant} - {money_supply} }} {{ {i_prod_money_coeff} }}
+        <br>
         """
 
 
-def generate_x_and_y_islm(y_range, c_y_value, c_const_value, i_i_value, i_const_value, g_value, tax_value, tax_constant):
-    N = 1000 # Liczba "numerycznie" wygenerowanych punktów - monte carlo    
-    x = np.linspace(0, y_range, N)
+def generate_x_and_y_islm(c_y_value, c_const_value, i_i_value, i_const_value, g_value, tax_value, tax_constant):
+    N = 2000 # Liczba "numerycznie" wygenerowanych punktów - monte carlo    
+    x = np.linspace(0, 100, N)
     y = [ ((1 / (1 - c_y_value*(1 - tax_value)) ) * (c_const_value+i_const_value+g_value-tax_constant - (i_i_value * i))) for i in x]
     return x,y
 
-def generate_x_and_y_lm(y_range, money_coeff, money_constant, i_money_coeff, money_supply):
-    N = 1000 # Liczba "numerycznie" wygenerowanych punktów - monte carlo    
-    x = np.linspace(0, y_range, N)    
-    y = [ ((( money_coeff * i) / i_money_coeff )  - (  (money_supply - money_constant) / i_money_coeff ) ) for i in x]
-    return x,y
+def generate_x_and_y_lm(prod_money_coeff, money_constant, i_prod_money_coeff, money_supply):
+    N = 2000 # Liczba "numerycznie" wygenerowanych punktów - monte carlo    
+    x = np.linspace(0, 10000, N) # STOPA PROCENTOWA   
+    y = [ ( ( (prod_money_coeff * i) + (money_constant - money_supply)) / i_prod_money_coeff ) for i in x]
+    return y,x
 
 def create_visualization(doc):
+    # Problem 6 - works http://www.economicsdiscussion.net/is-lm-curve-model/algebraic-analysis-of-is-lm-model-with-numerical-problems/10609
     c_const_value = 100
-    c_y_value = 0.75
+    c_y_value = 0.8
     i_const_value = 50
     i_i_value = 25
     g_value = 50
-    tax_value = 0.1
-    tax_constant = 50
+    tax_value = 0.0
+    tax_constant = 40
 
     x_range_is = 10
     y_range_is = 400
 
-    money_coeff = 0.2
-    money_constant = 0 
-    i_money_coeff = 5
-    money_supply = 85
+    prod_money_coeff = 1
+    money_constant = 0
+    i_prod_money_coeff = 25
+    money_supply = 200
 
     # Set up data
     #Definicja źródła danych, które generujemy numerycznie
-    x, y = generate_x_and_y_islm(y_range_is, c_y_value, c_const_value, i_i_value, i_const_value, g_value, tax_value, tax_constant)
+    x, y = generate_x_and_y_islm(c_y_value, c_const_value, i_i_value, i_const_value, g_value, tax_value, tax_constant)
     source = ColumnDataSource(data=dict(x=x, y=y))
-    x_2, y_2 = generate_x_and_y_lm(15, money_coeff, money_constant, i_money_coeff, money_supply)
+    x_2, y_2 = generate_x_and_y_lm(prod_money_coeff, money_constant, i_prod_money_coeff, money_supply)
     source2 = ColumnDataSource(data=dict(x=x_2, y=y_2))
 
     # Tworzenie wykresu - sam wykres jest nieinteraktywny
@@ -94,29 +100,41 @@ def create_visualization(doc):
                    x_axis_label="stopa procentowa i", y_axis_label="Y")
 
     plot2 = figure(plot_height=800, plot_width=600, title="Krzywa LM",
-                  x_range=[0, 10], y_range=[0, 10], tools="pan,wheel_zoom", active_scroll="wheel_zoom", toolbar_location="above",
-                   x_axis_label="stopa procentowa i", y_axis_label="M/P")
+                  x_range=[0, x_range_is], y_range=[0, y_range_is], tools="pan,wheel_zoom", active_scroll="wheel_zoom", toolbar_location="above",
+                   x_axis_label="Y", y_axis_label="stopa procentowa i")
+
+
+    plot3 = figure(plot_height=800, plot_width=600, title="IS LM",
+                  x_range=[0, x_range_is], y_range=[0, y_range_is], tools="pan,wheel_zoom", active_scroll="wheel_zoom", toolbar_location="above",
+                   x_axis_label="IS", y_axis_label="LM")
 
     #Wykresy danych
     plot.line("x","y", source=source, legend="IS", line_width=3, line_color="Green", line_alpha=0.6)
     plot2.line("x","y", source=source2, legend="LM", line_width=3, line_color="Red", line_alpha=0.6)
 
+    plot3.line("x","y", source=source, legend="IS", line_width=3, line_color="Green", line_alpha=0.6)
+    plot3.line("x","y", source=source2, legend="LM", line_width=3, line_color="Red", line_alpha=0.6)
+
     #Os wspolrzednych
     plot.renderers.extend([Span(location=0, dimension='height', line_color='black', line_width=1), Span(location=0, dimension='width', line_color='black', line_width=1)])
     plot2.renderers.extend([Span(location=0, dimension='height', line_color='black', line_width=1), Span(location=0, dimension='width', line_color='black', line_width=1)])
-    
+    plot3.renderers.extend([Span(location=0, dimension='height', line_color='black', line_width=1), Span(location=0, dimension='width', line_color='black', line_width=1)])   
+
     #Dodatkowy test
     # sometext = Title(text=create_equation(), align="center")
     # plot.add_layout(sometext, "below")
 
     #INTERAKCJA - hover
     #https://bokeh.pydata.org/en/latest/docs/user_guide/tools.html#basic-tooltips
-    tooltips = [("(x,y)", "($x,$y)")
-                        # ,("punkt rownowagi", "1245")]
-                        ]
+    tooltips = [("(x,y)", "($x,$y)")]
+    islm_tooltips = [("(x,y)", "($x,$y)")
+    # ,("punkt rownowagi", "1245")
+    ]
+    islm_hover =  HoverTool(tooltips=islm_tooltips, mode='vline')
     hover = HoverTool(tooltips=tooltips, mode='vline')
     plot.add_tools(hover) 
     plot2.add_tools(hover)
+    plot3.add_tools(islm_hover)
 
     # Widgety - interackcja
     #Bokeh nie ma float input - mozliwe bledy bez castowania
@@ -129,17 +147,17 @@ def create_visualization(doc):
     taxcon_input = TextInput(title="Podatki", value=str(round(tax_constant,2)))
 
     #WIDGETY LM
-    money_coeff_input = Slider(title="Funkcja Y - popyt konsumpc na pieniadz", value=money_coeff, start=0, end=1.0, step=0.1)
+    prod_money_coeff_input = Slider(title="Funkcja Y - popyt konsumpc na pieniadz", value=prod_money_coeff, start=0, end=1.0, step=0.1)
     money_constant_input = TextInput(title="Stały popyt - minumum", value=str(round(money_constant,2)))
-    i_money_coeff_input = TextInput(title="Funkcja inwestycji", value=str(round(i_money_coeff,2)))
-    money_supply_input = TextInput(title="Podaz Pieniadza Ms", value=str(round(money_supply,2)))
+    i_prod_money_coeff_input = TextInput(title="Funkcja inwestycji", value=str(round(i_prod_money_coeff,2)))
+    money_supply_input = TextInput(title="Podaz Pieniadza M/P", value=str(round(money_supply,2)))
 
     #Divy z tekstem
     div = Div(text=escape_to_latex(static_is_div_test.format(main_equation = create_equation(), c_const=c_const_value, c_y=c_y_value, 
         i_const = i_const_value , i_i= i_i_value, tax_value = tax_value, g_value = g_value, tax_constant = tax_constant).replace("<br>", "\\\\ ")),
     width=800, height=300)
 
-    div2 = Div(text=escape_to_latex(static_lm_div_test.format(money_coeff = money_coeff, money_constant = money_constant, i_money_coeff = i_money_coeff, money_supply = money_supply).replace("<br>", "\\\\ ")),
+    div2 = Div(text=escape_to_latex(static_lm_div_test.format(prod_money_coeff = prod_money_coeff, money_constant = money_constant, i_prod_money_coeff = i_prod_money_coeff, money_supply = money_supply).replace("<br>", "\\\\ ")),
     width=800, height=300)
 
 
@@ -155,14 +173,14 @@ def create_visualization(doc):
         tax_value = float(tax_input.value)
         tax_constant = float(taxcon_input.value)
 
-        money_coeff = float(money_coeff_input.value)
+        prod_money_coeff = float(prod_money_coeff_input.value)
         money_constant = float(money_constant_input.value)
-        i_money_coeff = float(i_money_coeff_input.value)
+        i_prod_money_coeff = float(i_prod_money_coeff_input.value)
         money_supply = float(money_supply_input.value)
 
         # Update source.data w efekcie generuje nowy wykres
-        x,y = generate_x_and_y_islm(y_range_is, c_y_value, c_const_value, i_i_value, i_const_value, g_value, tax_value, tax_constant)
-        x_2,y_2 = generate_x_and_y_lm(15, money_coeff, money_constant, i_money_coeff, money_supply)
+        x,y = generate_x_and_y_islm(c_y_value, c_const_value, i_i_value, i_const_value, g_value, tax_value, tax_constant)
+        x_2,y_2 = generate_x_and_y_lm(prod_money_coeff, money_constant, i_prod_money_coeff, money_supply)
 
         source.data = dict(x=x, y=y)
         source2.data = dict(x=x_2, y=y_2)
@@ -170,8 +188,8 @@ def create_visualization(doc):
         div.text = escape_to_latex(static_is_div_test.format(main_equation = create_equation(), c_const=c_const_value, c_y=c_y_value, 
             i_const = i_const_value , i_i= i_i_value, tax_value = tax_value, g_value = g_value, tax_constant = tax_constant).replace("<br>", "\\\\ "))
 
-        div2.text = escape_to_latex(static_lm_div_test.format(money_coeff = money_coeff, money_constant = money_constant, 
-        i_money_coeff = i_money_coeff, money_supply = money_supply).replace("<br>", "\\\\ "))
+        div2.text = escape_to_latex(static_lm_div_test.format(prod_money_coeff = prod_money_coeff, money_constant = money_constant, 
+        i_prod_money_coeff = i_prod_money_coeff, money_supply = money_supply).replace("<br>", "\\\\ "))
 
     #TODO based on https://bokeh.pydata.org/en/latest/docs/user_guide/interaction/callbacks.html#customjs-for-user-interaction-events
     js_latexize_code = """
@@ -181,7 +199,7 @@ def create_visualization(doc):
     MathJax.Hub.Queue(["Typeset",MathJax.Hub,div_value]);
     """.replace("/","&#92")
 
-    for w in [c_y_input, c_const_input, i_const_input, i_i_input, g_input, tax_input, taxcon_input, money_coeff_input, money_constant_input, i_money_coeff_input, money_supply_input]:
+    for w in [c_y_input, c_const_input, i_const_input, i_i_input, g_input, tax_input, taxcon_input, prod_money_coeff_input, money_constant_input, i_prod_money_coeff_input, money_supply_input]:
         w.on_change('value', update_data)
         w.js_on_change('value', CustomJS(args=dict(div = div, div2 = div2),code=js_latexize_code))
         #Nie można tu wykorzystać texa ani nic podobnego, wszystkie dynamiczne rzeczy muszą odbywać się w kodzie JS w js_code.
@@ -190,14 +208,15 @@ def create_visualization(doc):
     
     # Grupowanie widgetów i layout
     widgets = widgetbox(c_y_input, c_const_input, i_const_input, i_i_input, g_input, tax_input, taxcon_input, width=150)
-    widgets2 = widgetbox(money_coeff_input, money_constant_input, i_money_coeff_input, money_supply_input, width=150)
+    widgets2 = widgetbox(prod_money_coeff_input, money_constant_input, i_prod_money_coeff_input, money_supply_input, width=150)
     # layout = row(widgets, plot, plot2, width=400, height = 400)
     complex_layout = layout([
       # [widgets, plot, plot2],
       [widgets, plot],
       [div],
       [widgets2, plot2],
-      [div2]
+      [div2],
+      [plot3]
     ], sizing_mode='fixed')
     #Finalne tworzenie dokumentu, który może zostać serwowany w serwerze
     doc.add_root(complex_layout)
