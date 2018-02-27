@@ -12,6 +12,7 @@ from bokeh.themes import Theme
 from bokeh.io import curdoc
 from bokeh.resources import INLINE
 
+from bokeh import events
 from bokeh.models.widgets import Div
 
 from sympy import *
@@ -197,7 +198,6 @@ def create_visualization(doc):
         w.js_on_change('value', CustomJS(args=dict(div = div, div2 = div2),code=js_latexize_code))
         #Nie można tu wykorzystać texa ani nic podobnego, wszystkie dynamiczne rzeczy muszą odbywać się w kodzie JS w js_code.
         # Dzialanie nie do konca takie jak trzeba - Text nie moze miec on_change listenera...
-
     
     # Grupowanie widgetów i layout
     widgets = widgetbox(c_y_input, c_const_input, i_const_input, i_i_input, g_input, tax_input, taxcon_input, width=150)
@@ -209,6 +209,12 @@ def create_visualization(doc):
       [div2],
       [plot3]
     ], sizing_mode='fixed')
+
+
+    # Bugi oparte na plotrender - https://groups.google.com/a/continuum.io/forum/#!msg/bokeh/_-m57q6JIMo/rgAXOBuwAwAJ
+    for plotobj in [plot, plot2, plot3]:
+        for event in [events.MouseWheel, events.LODEnd, events.ButtonClick]:
+            plotobj.js_on_event(event,CustomJS(args=dict(div = div, div2 = div2),code=js_latexize_code))
 
     #Finalne tworzenie dokumentu, który może zostać serwowany w serwerze
     doc.add_root(complex_layout)
