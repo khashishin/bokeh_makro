@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{{ title if title else "Bokeh Plot" }}</title>
+	{{ bokeh_css }}  
+</head>
+
+<body>
+<p><h1>Wizualizacja wykresów</h1></p>
+{{ bokeh_js }}
+
+<br>
+    {{ plot_div|indent(8) }}
+    {{ plot_script|indent(8) }}
+</body>
+<!-- MATH EXPRESSION LIBRARIES -->
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: {
+     equationNumbers: {  autoNumber: "AMS"  },
+     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js", "color.js"],
+     inlineMath: [['$$','$$'], ['\\(','\\)']]
+  }
+});
+
+</script>
+</html>

@@ -1,7 +1,0 @@
-    https://stackoverflow.com/questions/42958384/entry-point-for-a-bokeh-server
-
-    #https://github.com/bokeh/bokeh/blob/0.12.14/examples/howto/server_embed/flask_embed.py
-
-    #https://github.com/bokeh/bokeh/issues/3893
-
-    https://groups.google.com/a/continuum.io/forum/#!msg/bokeh/OxW3t_xN8Ug/oh_FeoqxGgAJ

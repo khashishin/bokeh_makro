@@ -14,6 +14,20 @@ div.bk-root{
 </style>
 </head>
 <body>
+    <script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.js"></script>
+    <script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.14.min.js"></script>
+
+ <p><h1>Wizualizacja wykresów</h1></p>
+{{js_resources   | safe}}
+{{ name | safe }}
+
+{{ script | safe}}
+
+<br>
+
+</body>
+<!-- MATH EXPRESSION LIBRARIES -->
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
   TeX: {
@@ -22,31 +36,6 @@ MathJax.Hub.Config({
      inlineMath: [['$$','$$'], ['\\(','\\)']]
   }
 });
+
 </script>
-
-<!-- MATH EXPRESSION LIBRARIES -->
-<script type="text/javascript"
- src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-</script>
-
-    <script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.js"></script>
-    <script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.14.min.js"></script>
- <p><h1>Wizualizacja wykresów</h1></p>
-{{js_resources   | safe}}
-{{ name | safe }}
-
-{{ script | safe}}
-
-<div id="equations">
-$$ \frac {\delta x} {\delta y}: $$ <div id = "dynamic_equation"> </div>
-<br> <br>
-Test równania statycznego podanego z Pythona: {{static_math_expression}}
-</div>
-
-<div>
-  Rownanie statyczne wpisane "na sztywno w JS": \(C =\bar{C} + cY_d = \bar{C} + c(Y-T), \space \frac{\delta C}{\delta Y_d}\) 
-
-</div>
-
-</body>
 </html>
