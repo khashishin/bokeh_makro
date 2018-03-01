@@ -19,7 +19,9 @@ def create_bokeh_server(io_loop, files, argvs, host, port):
         'num_procs':1,
         'sign_sessions':False,
         'port':port,
-        'use_index':True
+        'use_index':True,
+	'allow_websocket_origin': ['localhost:5006','127.0.0.1:5006','10.7.61.53:5006','10.7.61.53:80']
+	#,'prefix' :'/'
     }
     server = Server(apps,**kwargs)
 
@@ -38,15 +40,15 @@ def run_single_app(files, port=5000, new='tab'):
 
         Ideally this would `bokeh.util.browser.view()`, but it doesn't work
         '''
-        import webbrowser
+        #import webbrowser
 
         # Map method strings to webbrowser method
-        options = {'current':0, 'window':1, 'tab':2}
+        #options = {'current':0, 'window':1, 'tab':2}
 
         # Concatenate url and open in browser, creating a session
-        app_url = 'http://{}/{}'.format(host, app_name)
-        print('Opening `{}` in browser'.format(app_url))
-        webbrowser.open(app_url, new=options[new])
+        #app_url = 'http://{}/{}'.format(host, app_name)
+        #print('Opening `{}` in browser'.format(app_url))
+        #webbrowser.open(app_url, new=options[new])
 
         return None
 

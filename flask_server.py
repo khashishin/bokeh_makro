@@ -1,4 +1,7 @@
-from flask import Flask, render_template
+
+# -*- coding: utf-8 -*-
+
+from flask import Flask, render_template, request
 from threading import Thread
 
 from bokeh.embed import server_document
@@ -234,25 +237,25 @@ app = Flask(__name__)
 #Defnicja Javascriptowych zrodel dla bokeh
 js_resources = INLINE.render_js()
 css_resources = INLINE.render_css()
-main_server_port = 8000
-bokeh_plot_server_1_port = 9090
+main_server_port = 5100
+bokeh_plot_server_1_port = 5006
 application_link = "/bkapp"
 @app.route('/', defaults={'name': ''})
 @app.route('/<string:name>', methods=['GET']) 
 #Przekazujemy prosty parametr tekstowy - dla czytelnosci że się da i działa, tutaj nie można umieszczać nic 
 #To co tutaj jest dotyczy zachowania aplikcji po wpisaniu /<string>
-
 #To jest aplikacja kliencka Bokeha ktora laczy sie z serwerem w bk_server_worker
 def bkapp_page(name):
+    request_url = request.base_url
     server_thread = Thread(target=bk_server_worker)
     server_thread.start()
     #Startujemy serwer i odpowiednie wątki, tak żeby odświeżać nasz dokument
-    script = server_document('http://localhost:{}{}'.format(bokeh_plot_server_1_port,application_link))
+    script = server_document(request_url+application_link[1:])
     return render_template("embed_flask.html", name=name, script=script, js_resources=js_resources, css_resources=css_resources, template="Flask", 
         static_math_expression = create_equation())
 
 def bk_server_worker():
-    server = Server({application_link: create_visualization}, allow_websocket_origin=["127.0.0.1:{}".format(main_server_port), "localhost:{}".format(main_server_port)], port=int(bokeh_plot_server_1_port)) 
+    server = Server({application_link: create_visualization}, allow_websocket_origin=["http://localhost:{}".format(main_server_port), "http://127.0.0.1:{}".format(main_server_port)], port=int(bokeh_plot_server_1_port)) 
     server.start()
     server.io_loop.start()
 
@@ -260,4 +263,4 @@ if __name__ == '__main__':
     print ("Running bokeh server...")
     # print ("Openning bokeh worker server application on http://localhost:{}{}".format(bokeh_plot_server_1_port,application_link))
     print ("Openning single process Flask app with embedded Bokeh application on http://localhost:{}".format(main_server_port))
-    app.run(port=main_server_port, debug=False)
+    #app.run(port=main_server_port, debug=False)
